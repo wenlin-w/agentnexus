@@ -1,0 +1,28 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+
+# A release (vX.Y.Z) is built here from the source the private development
+# repository pushed (scripts/github.sh source), and published as the latest
+# release. Release candidates (vX.Y.Z-rcN) are published from there directly.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: go.mod
+      - name: build
+        run: make dist VERSION="$GITHUB_REF_NAME"
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git log -1 --format=%b > "$RUNNER_TEMP/notes.md"
+          gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" --latest
