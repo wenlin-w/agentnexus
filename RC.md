@@ -4,4 +4,6 @@
 
 A release candidate: this branch holds only what is published; the source comes with the release.
 
+- gofmt
 - Codex: estimate turn cost from LiteLLM prices at official standard rates
+- Gitea Actions: run on the runner label "build" instead of the host name na2
